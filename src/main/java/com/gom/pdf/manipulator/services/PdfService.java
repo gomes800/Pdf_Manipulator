@@ -27,14 +27,32 @@ public class PdfService {
     }
 
     public void imageToPdf(String imagePath, String fileName, String destDir) throws IOException {
-        try(PDDocument document = new PDDocument();
-            InputStream in = new FileInputStream(imagePath)) {
-            PDImageXObject img = LosslessFactory.createFromImage(document, readImage(imagePath));
+        try(PDDocument document = new PDDocument()) {
+            BufferedImage bufferedImage = readImage(imagePath);
+            PDImageXObject img = LosslessFactory.createFromImage(document, bufferedImage);
             PDPage page = new PDPage();
             document.addPage(page);
+
+            PDRectangle mediabox = page.getMediaBox();
+            float pageWidth = mediabox.getWidth();
+            float pageHeight = mediabox.getHeight();
+
+            int imageWidth = bufferedImage.getWidth();
+            int imageHeight = bufferedImage.getHeight();
+
+            float widthScale = pageWidth / imageWidth;
+            float heightScale = pageHeight / imageHeight;
+            float scale = Math.min(widthScale, heightScale);
+
+            float scaledWidth = imageWidth * scale;
+            float scaledHeight = imageHeight * scale;
+
+            float x = (pageWidth - scaledWidth) / 2;
+            float y = (pageHeight - scaledHeight) / 2;
+
             try (PDPageContentStream contentStream = new
                     PDPageContentStream(document, page)) {
-                contentStream.drawImage(img, 0, 0);
+                contentStream.drawImage(img, x, y, scaledWidth, scaledHeight);
             }
             document.save(destDir + "/" + fileName + ".pdf");
         }
