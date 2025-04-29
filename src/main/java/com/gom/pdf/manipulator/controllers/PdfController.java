@@ -38,7 +38,7 @@ public class PdfController {
                 throw new RuntimeException("Arquivo não foi salvo: " + tempPath);
             }
 
-            pdfService.imageToPdf(tempPath, "convertido", uploadDir);
+            pdfService.imageToPdf(tempPath, file.getOriginalFilename() + "-convertido", uploadDir);
 
             new File(tempPath).delete();
 

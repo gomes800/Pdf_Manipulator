@@ -18,14 +18,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Service
-
 public class PdfService {
 
     public BufferedImage readImage(String path) throws IOException {
         return ImageIO.read(new File(path));
     }
 
-    public void imageToPdf(String imagePath, String fileName, String destDir) throws IOException {
+    public void imageToPdf(String imagePath, String fileName, String outputPath) throws IOException {
         try(PDDocument document = new PDDocument()) {
             BufferedImage bufferedImage = readImage(imagePath);
             PDImageXObject img = LosslessFactory.createFromImage(document, bufferedImage);
@@ -53,7 +52,7 @@ public class PdfService {
                     PDPageContentStream(document, page)) {
                 contentStream.drawImage(img, x, y, scaledWidth, scaledHeight);
             }
-            document.save(destDir + "/" + fileName + ".pdf");
+            document.save(outputPath + "/" + fileName + ".pdf");
         }
     }
 
