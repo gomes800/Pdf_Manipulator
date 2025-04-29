@@ -22,8 +22,7 @@ import java.io.InputStream;
 public class PdfService {
 
     public BufferedImage readImage(String path) throws IOException {
-        BufferedImage image = ImageIO.read(new File("C:\\Users\\CAIXA1\\Documents\\Projects\\pdf-manipulator\\src\\images.jpg"));
-        return image;
+        return ImageIO.read(new File(path));
     }
 
     public void imageToPdf(String imagePath, String fileName, String destDir) throws IOException {
