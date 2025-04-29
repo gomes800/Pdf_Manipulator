@@ -60,6 +60,12 @@ public class FileUploadController {
         return "redirect:/";
     }
 
+    @PostMapping("/api/upload")
+    public ResponseEntity<String> handleFileUploadApi(@RequestParam("file") MultipartFile file) {
+        storageService.store(file);
+        return ResponseEntity.ok("Upload feito com sucesso: " + file.getOriginalFilename());
+    }
+
     @ExceptionHandler(StorageFileNotFoundException.class)
     public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
         return ResponseEntity.notFound().build();
