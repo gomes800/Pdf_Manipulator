@@ -29,7 +29,6 @@ public class PdfController {
     public ResponseEntity<String> convertImage(@RequestParam("file") MultipartFile file) {
         try {
             String uploadDir = storageProperties.getLocation();
-            File dir = new File(uploadDir);
 
             String tempPath = uploadDir + "/" + file.getOriginalFilename();
             file.transferTo(new File(tempPath));
@@ -43,6 +42,28 @@ public class PdfController {
             new File(tempPath).delete();
 
             return ResponseEntity.ok("Imagem convertida para PDF com sucesso!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao converter: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/split")
+    public ResponseEntity<String> splitPdf(@RequestParam("file") MultipartFile file) {
+        try {
+            String uploadDir = storageProperties.getLocation();
+
+            String tempPath = uploadDir + "/" + file.getOriginalFilename();
+            file.transferTo(new File(tempPath));
+            File savedFile = new File(tempPath);
+            if (!savedFile.exists()) {
+                throw new RuntimeException("Arquivo não foi salvo: " + tempPath);
+            }
+
+            pdfService.splitPdf(tempPath, 2, 3, uploadDir);
+
+            new File(tempPath).delete();
+
+            return ResponseEntity.ok("PDF separado com sucesso.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao converter: " + e.getMessage());
         }

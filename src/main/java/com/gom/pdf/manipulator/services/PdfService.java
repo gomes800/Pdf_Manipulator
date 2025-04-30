@@ -1,9 +1,6 @@
 package com.gom.pdf.manipulator.services;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -53,6 +50,20 @@ public class PdfService {
                 contentStream.drawImage(img, x, y, scaledWidth, scaledHeight);
             }
             document.save(outputPath + "/" + fileName + ".pdf");
+        }
+    }
+
+    public void splitPdf(String pdfPath, int fromPage, int toPage, String outputPath) throws IOException{
+        try (PDDocument document = PDDocument.load(new File(pdfPath))){
+            PDDocument splitDocument = new PDDocument();
+            int start = fromPage - 1;
+            int end = toPage - 1;
+
+            for (int i =start; i <= end; i++) {
+                splitDocument.addPage(document.getPage(i));
+            }
+            splitDocument.save(outputPath + "/" + "splitDoc" + ".pdf");
+            splitDocument.close();
         }
     }
 
