@@ -30,6 +30,10 @@ public class PdfService {
         this.uploadDir = storageProperties.getLocation();
     }
 
+    public PdfService(String uploadDir) {
+        this.uploadDir = uploadDir;
+    }
+
     public void imageToPdf(MultipartFile file) throws IOException {
         File tempFile = FileUtils.saveWithUniqueName(file, uploadDir);
 
@@ -84,7 +88,6 @@ public class PdfService {
         }
     }
 
-    //PDFMergerUtility PDFMergerUtility PDFMergerUtility PDFMergerUtility
     public void mergePdf(MultipartFile file1, MultipartFile file2) throws IOException {
         File tempFile1 = FileUtils.saveWithUniqueName(file1, uploadDir);
         File tempFile2 = FileUtils.saveWithUniqueName(file2, uploadDir);
