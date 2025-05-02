@@ -4,7 +4,9 @@ import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -17,13 +19,20 @@ import java.io.InputStream;
 @Service
 public class PdfService {
 
-    public BufferedImage readImage(String path) throws IOException {
-        return ImageIO.read(new File(path));
+    private final String uploadDir;
+
+    @Autowired
+    public PdfService(com.gom.pdf.manipulator.config.StorageProperties storageProperties) {
+        this.uploadDir = storageProperties.getLocation();
     }
 
-    public void imageToPdf(String imagePath, String fileName, String outputPath) throws IOException {
+    public void imageToPdf(MultipartFile file) throws IOException {
+        String tempPath = uploadDir + "/" + file.getOriginalFilename();
+        File tempFile = new File(tempPath);
+        file.transferTo(tempFile);
+
         try(PDDocument document = new PDDocument()) {
-            BufferedImage bufferedImage = readImage(imagePath);
+            BufferedImage bufferedImage = ImageIO.read(tempFile);
             PDImageXObject img = LosslessFactory.createFromImage(document, bufferedImage);
             PDPage page = new PDPage();
             document.addPage(page);
@@ -49,12 +58,18 @@ public class PdfService {
                     PDPageContentStream(document, page)) {
                 contentStream.drawImage(img, x, y, scaledWidth, scaledHeight);
             }
-            document.save(outputPath + "/" + fileName + ".pdf");
+            document.save(uploadDir + "/" + file.getOriginalFilename() + ".pdf");
+        } finally {
+            tempFile.delete();
         }
     }
 
-    public void splitPdf(String pdfPath, int fromPage, int toPage, String outputPath) throws IOException{
-        try (PDDocument document = PDDocument.load(new File(pdfPath))){
+    public void splitPdf(MultipartFile file, int fromPage, int toPage) throws IOException{
+        String tempPath = uploadDir + "/" + file.getOriginalFilename();
+        File tempFile = new File(tempPath);
+        file.transferTo(tempFile);
+
+        try (PDDocument document = PDDocument.load(tempFile)){
             PDDocument splitDocument = new PDDocument();
             int start = fromPage - 1;
             int end = toPage - 1;
@@ -62,9 +77,15 @@ public class PdfService {
             for (int i =start; i <= end; i++) {
                 splitDocument.addPage(document.getPage(i));
             }
-            splitDocument.save(outputPath + "/" + "splitDoc" + ".pdf");
+            splitDocument.save(uploadDir + "/" + "splitDoc" + ".pdf");
             splitDocument.close();
+        } finally {
+            tempFile.delete();
         }
+    }
+
+    //PDFMergerUtility PDFMergerUtility PDFMergerUtility PDFMergerUtility
+    public void mergePdf(String pdfPath1, String pdfPath2, String outputPath) throws IOException {
     }
 
 }
