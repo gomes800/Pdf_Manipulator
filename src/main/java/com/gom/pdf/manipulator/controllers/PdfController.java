@@ -41,4 +41,14 @@ public class PdfController {
             return ResponseEntity.badRequest().body("Erro ao dividir: " + e.getMessage());
         }
     }
+
+    @PostMapping("/merge")
+    public ResponseEntity<String> mergePdf(@RequestParam("file1") MultipartFile file1, @RequestParam("file2") MultipartFile file2) throws IOException {
+        try {
+            pdfService.mergePdf(file1, file2);
+            return ResponseEntity.ok("Pdf combinado com sucesso.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao combinar: " + e.getMessage());
+        }
+    }
 }

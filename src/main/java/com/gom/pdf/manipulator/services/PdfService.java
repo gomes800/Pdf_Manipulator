@@ -1,5 +1,8 @@
 package com.gom.pdf.manipulator.services;
 
+import com.gom.pdf.manipulator.utils.FileUtils;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
@@ -15,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.UUID;
 
 @Service
 public class PdfService {
@@ -27,9 +31,7 @@ public class PdfService {
     }
 
     public void imageToPdf(MultipartFile file) throws IOException {
-        String tempPath = uploadDir + "/" + file.getOriginalFilename();
-        File tempFile = new File(tempPath);
-        file.transferTo(tempFile);
+        File tempFile = FileUtils.saveWithUniqueName(file, uploadDir);
 
         try(PDDocument document = new PDDocument()) {
             BufferedImage bufferedImage = ImageIO.read(tempFile);
@@ -65,9 +67,7 @@ public class PdfService {
     }
 
     public void splitPdf(MultipartFile file, int fromPage, int toPage) throws IOException{
-        String tempPath = uploadDir + "/" + file.getOriginalFilename();
-        File tempFile = new File(tempPath);
-        file.transferTo(tempFile);
+        File tempFile = FileUtils.saveWithUniqueName(file, uploadDir);
 
         try (PDDocument document = PDDocument.load(tempFile)){
             PDDocument splitDocument = new PDDocument();
@@ -85,7 +85,23 @@ public class PdfService {
     }
 
     //PDFMergerUtility PDFMergerUtility PDFMergerUtility PDFMergerUtility
-    public void mergePdf(String pdfPath1, String pdfPath2, String outputPath) throws IOException {
+    public void mergePdf(MultipartFile file1, MultipartFile file2) throws IOException {
+        File tempFile1 = FileUtils.saveWithUniqueName(file1, uploadDir);
+        File tempFile2 = FileUtils.saveWithUniqueName(file2, uploadDir);
+
+        try {
+            PDFMergerUtility merger = new PDFMergerUtility();
+            merger.addSource(tempFile1);
+            merger.addSource(tempFile2);
+
+            String outputPath = uploadDir + "/" + UUID.randomUUID() + "-merged.pdf";
+            merger.setDestinationFileName(outputPath);
+
+            merger.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+        } finally {
+            tempFile1.delete();
+            tempFile2.delete();
+        }
     }
 
 }
